@@ -1,5 +1,6 @@
 import { useTheme } from "@/theme/use-theme";
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { StyledText } from "./styled-text";
 
 type LogoSize = "sm" | "md" | "lg";
 
@@ -27,26 +28,26 @@ export function Logo({ size = "md" }: LogoProps) {
 
   return (
     <View className="flex-row items-baseline">
-      <Text
+      <StyledText
+        variant="display"
         style={{
-          fontFamily: "DMSerifDisplay_400Regular",
           fontSize,
           lineHeight,
           color: colors.primary,
         }}
       >
         Green
-      </Text>
-      <Text
+      </StyledText>
+      <StyledText
+        variant="display"
         style={{
-          fontFamily: "DMSerifDisplay_400Regular",
           fontSize,
           lineHeight,
           color: colors.accent,
         }}
       >
         Ride
-      </Text>
+      </StyledText>
     </View>
   );
 }

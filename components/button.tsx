@@ -32,6 +32,7 @@ interface ButtonProps extends Omit<PressableProps, "style"> {
   haptic?: boolean;
   loading?: boolean;
   fullWidth?: boolean;
+  rounded?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
 }

@@ -1,49 +1,49 @@
-import { DMSans_400Regular } from "@expo-google-fonts/dm-sans/400Regular";
-import { DMSans_500Medium } from "@expo-google-fonts/dm-sans/500Medium";
-import { DMSans_700Bold } from "@expo-google-fonts/dm-sans/700Bold";
-import { DMSerifDisplay_400Regular } from "@expo-google-fonts/dm-serif-display/400Regular";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { colorScheme } from "nativewind";
-import { useEffect } from "react";
+import { useCallback } from "react";
+import { View } from "react-native";
 import Toast from "react-native-toast-message";
 import "../global.css";
 
+const DMSans_400Regular = require("@expo-google-fonts/dm-sans/400Regular/DMSans_400Regular.ttf");
+const DMSans_500Medium = require("@expo-google-fonts/dm-sans/500Medium/DMSans_500Medium.ttf");
+const DMSans_700Bold = require("@expo-google-fonts/dm-sans/700Bold/DMSans_700Bold.ttf");
+
 SplashScreen.preventAutoHideAsync();
 
-/*
- * Force light mode at startup. The user can change this in settings
- * via useThemeStore().setMode("dark").
- */
 colorScheme.set("light");
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    DMSerifDisplay_400Regular,
     DMSans_400Regular,
     DMSans_500Medium,
     DMSans_700Bold,
   });
 
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
+  /*
+   * Hide splash screen once fonts are ready (or on error).
+   * onLayout fires after the first render, by which point
+   * useFonts has resolved — no useEffect needed.
+   */
+  const onRootLayout = useCallback(() => {
+    if (loaded || error) {
+      if (error) console.warn("Font load error:", error);
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, error]);
 
-  useEffect(() => {
-    if (loaded) SplashScreen.hideAsync();
-  }, [loaded]);
-
-  if (!loaded) return null;
+  if (!loaded && !error) return null;
 
   return (
-    <>
+    <View style={{ flex: 1 }} onLayout={onRootLayout}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="auth" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
       <Toast />
-    </>
+    </View>
   );
 }

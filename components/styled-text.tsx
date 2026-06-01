@@ -14,21 +14,22 @@ interface StyledTextProps extends TextProps {
 }
 
 /*
- * Font metrics per style guide. Kept as inline style because
- * NativeWind cannot resolve loaded custom font families as
- * utility classes — fontFamily must be set via style prop.
+ * Font metrics per style guide. fontFamily must be set via style prop —
+ * NativeWind cannot resolve loaded custom font families as utility classes.
+ * The fontStyle entry is listed last in the merged array so it always wins
+ * over any NativeWind-compiled className styles.
  */
 const variantStyles: Record<
   TextVariant,
   { fontFamily: string; fontSize: number; lineHeight: number }
 > = {
   display: {
-    fontFamily: "DMSerifDisplay_400Regular",
+    fontFamily: "DMSans_700Bold",
     fontSize: 36,
     lineHeight: 36 * 1.1,
   },
   title: {
-    fontFamily: "DMSerifDisplay_400Regular",
+    fontFamily: "DMSans_700Bold",
     fontSize: 28,
     lineHeight: 28 * 1.2,
   },
@@ -61,10 +62,11 @@ export function StyledText({
   children,
   ...props
 }: StyledTextProps) {
+  const { fontFamily, fontSize, lineHeight } = variantStyles[variant];
   return (
     <Text
       className={className}
-      style={[variantStyles[variant], style]}
+      style={[style, { fontFamily, fontSize, lineHeight }]}
       {...props}
     >
       {children}
