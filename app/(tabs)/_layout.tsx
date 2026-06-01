@@ -1,10 +1,12 @@
 /*
- * Bottom tab navigator. Three tabs: Home and Profile.
- * Ride Confirmation is a stack screen, not a tab.
+ * Bottom tab navigator.
+ * Home and Profile tabs. Ride Confirmation is a stack screen, not a tab.
+ * Icons from phosphor-react-native — weight switches between
+ * "regular" (inactive) and "fill" (active) for a clean state toggle.
  */
 import { useTheme } from "@/theme/use-theme";
-import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { HouseIcon, UserIcon } from "phosphor-react-native";
 
 export default function TabLayout() {
   const { colors } = useTheme();
@@ -30,8 +32,12 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="leaf-outline" size={26} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <HouseIcon
+              size={26}
+              color={color}
+              weight={focused ? "fill" : "regular"}
+            />
           ),
         }}
       />
@@ -39,8 +45,12 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="person-outline" size={26} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <UserIcon
+              size={26}
+              color={color}
+              weight={focused ? "fill" : "regular"}
+            />
           ),
         }}
       />

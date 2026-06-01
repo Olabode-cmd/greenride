@@ -3,13 +3,31 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@/*": ["./*"],
-      "@/components/*": ["./components/*"],
-      "@/stores/*": ["./stores/*"],
-      "@/services/*": ["./services/*"],
-      "@/theme/*": ["./theme/*"],
-      "@/types/*": ["./types/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@/components/*": [
+        "./components/*"
+      ],
+      "@/stores/*": [
+        "./stores/*"
+      ],
+      "@/services/*": [
+        "./services/*"
+      ],
+      "@/theme/*": [
+        "./theme/*"
+      ],
+      "@/types/*": [
+        "./types/*"
+      ]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "nativewind-env.d.ts"
+  ]
 }
