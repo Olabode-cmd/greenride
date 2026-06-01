@@ -1,4 +1,4 @@
-import { useColorScheme } from "react-native";
+import { useColorScheme } from "nativewind";
 import { colors } from "./tokens";
 
 export type ThemeColors = {
@@ -15,19 +15,19 @@ export type ThemeColors = {
 };
 
 export function useTheme(): { colors: ThemeColors; isDark: boolean } {
-  const scheme = useColorScheme();
-  const isDark = scheme === "dark";
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
 
   const themeColors: ThemeColors = {
-    bg: isDark ? colors.bg : colors.light.bg,
-    surface: isDark ? colors.surface : colors.light.surface,
-    surfaceRaised: isDark ? colors.surfaceRaised : colors.light.surfaceRaised,
-    border: isDark ? colors.border : colors.light.border,
+    bg: isDark ? colors.dark.bg : colors.bg,
+    surface: isDark ? colors.dark.surface : colors.surface,
+    surfaceRaised: isDark ? colors.dark.surfaceRaised : colors.surfaceRaised,
+    border: isDark ? colors.dark.border : colors.border,
     accent: colors.accent,
     accentMuted: colors.accentMuted,
-    primary: isDark ? colors.primary : colors.light.primary,
-    secondary: isDark ? colors.secondary : colors.light.secondary,
-    disabled: isDark ? colors.disabled : colors.light.disabled,
+    primary: isDark ? colors.dark.primary : colors.primary,
+    secondary: isDark ? colors.dark.secondary : colors.secondary,
+    disabled: isDark ? colors.dark.disabled : colors.disabled,
     danger: colors.danger,
   };
 

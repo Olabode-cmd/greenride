@@ -2,11 +2,9 @@ import { useTheme } from "@/theme/use-theme";
 import { Text, View } from "react-native";
 
 type LogoSize = "sm" | "md" | "lg";
-type LogoTheme = "dark" | "light";
 
 interface LogoProps {
   size?: LogoSize;
-  theme?: LogoTheme;
 }
 
 const fontSizes: Record<LogoSize, number> = {
@@ -21,11 +19,8 @@ const lineHeights: Record<LogoSize, number> = {
   lg: 48 * 1.1,
 };
 
-export function Logo({ size = "md", theme }: LogoProps) {
-  const { colors, isDark } = useTheme();
-
-  const resolvedIsDark = theme ? theme === "dark" : isDark;
-  const primaryColor = resolvedIsDark ? "#FFFFFF" : "#111111";
+export function Logo({ size = "md" }: LogoProps) {
+  const { colors } = useTheme();
 
   const fontSize = fontSizes[size];
   const lineHeight = lineHeights[size];
@@ -37,7 +32,7 @@ export function Logo({ size = "md", theme }: LogoProps) {
           fontFamily: "DMSerifDisplay_400Regular",
           fontSize,
           lineHeight,
-          color: primaryColor,
+          color: colors.primary,
         }}
       >
         Green

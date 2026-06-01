@@ -8,21 +8,16 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function OnboardingScreen() {
   return (
     <SafeAreaView className="flex-1 bg-bg">
-      <View className="flex-1 px-4 justify-between py-12">
-        <View className="gap-6 mt-12">
+      <View className="flex-1 px-6 justify-center gap-12">
+        {/* Logo + headline centred in the upper portion */}
+        <View className="items-center gap-6">
           <Logo size="lg" />
-
-          <View className="gap-3">
-            <StyledText variant="title" className="text-primary">
-              Ride green,{"\n"}earn more.
-            </StyledText>
-            <StyledText variant="body" className="text-secondary">
-              Book eco-friendly rides, track your carbon savings, and earn
-              EcoPoints with every trip.
-            </StyledText>
-          </View>
+          <StyledText variant="title" className="text-primary text-center">
+            Eco rides.{"\n"}Real rewards.
+          </StyledText>
         </View>
 
+        {/* CTAs stacked at the bottom of the centred block */}
         <View className="gap-3">
           <Button
             label="Log in to your account"

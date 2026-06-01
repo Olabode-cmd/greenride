@@ -11,8 +11,8 @@ import Toast from "react-native-toast-message";
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
 
   function handleRegister() {
     const cleanEmail = sanitizeEmail(email);

@@ -5,11 +5,18 @@ import { DMSerifDisplay_400Regular } from "@expo-google-fonts/dm-serif-display/4
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { colorScheme } from "nativewind";
 import { useEffect } from "react";
 import Toast from "react-native-toast-message";
 import "../global.css";
 
 SplashScreen.preventAutoHideAsync();
+
+/*
+ * Force light mode at startup. The user can change this in settings
+ * via useThemeStore().setMode("dark").
+ */
+colorScheme.set("light");
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
