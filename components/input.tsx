@@ -76,10 +76,10 @@ export function Input({
         onPress={() => inputRef.current?.focus()}
         className={
           isTextarea
-            ? "flex-row items-start bg-surface px-4 py-3 h-[120px]"
+            ? "flex-row items-start bg-surface-input px-4 py-3 h-[120px]"
             : isSearch
-              ? "flex-row items-center bg-surface px-4 h-[52px] rounded-full"
-              : "flex-row items-center bg-surface px-4 h-[52px] rounded-xl"
+              ? "flex-row items-center bg-surface-input px-4 h-[52px] rounded-full"
+              : "flex-row items-center bg-surface-input px-4 h-[52px] rounded-xl"
         }
         style={{ borderWidth: 1, borderColor, gap: 8 }}
       >
@@ -100,7 +100,7 @@ export function Input({
             {
               flex: 1,
               fontFamily: "DMSans_400Regular",
-              fontSize: 16,
+              fontSize: 14,
               color: colors.primary,
               height: isTextarea ? "100%" : 52,
               paddingVertical: 0,

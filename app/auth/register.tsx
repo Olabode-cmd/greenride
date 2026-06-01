@@ -5,7 +5,8 @@ import { StyledText } from "@/components/styled-text";
 import { sanitize, sanitizeEmail } from "@/utils/sanitize";
 import { router } from "expo-router";
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
@@ -33,63 +34,58 @@ export default function RegisterScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-bg">
-      <KeyboardAvoidingView
+      <KeyboardAwareScrollView
         className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingVertical: 48,
+          gap: 32,
+        }}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="px-4 py-12 gap-8"
-          keyboardShouldPersistTaps="handled"
-        >
-          <View className="gap-2">
-            <Logo size="md" />
-            <StyledText variant="body" className="text-secondary">
-              Create an account to start riding green.
-            </StyledText>
-          </View>
+        <View className="gap-2">
+          <Logo size="sm" />
+          <StyledText variant="body" className="text-secondary">
+            Create an account to start riding green.
+          </StyledText>
+        </View>
 
-          <View className="gap-4">
-            <Input
-              label="Email"
-              placeholder="you@example.com"
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="email-address"
-              value={email}
-              onChangeText={setEmail}
-            />
-            <Input
-              variant="password"
-              label="Password"
-              placeholder="Choose a password"
-              value={password}
-              onChangeText={setPassword}
-            />
-            <Input
-              variant="password"
-              label="Confirm password"
-              placeholder="Repeat your password"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-            />
-          </View>
+        <View className="gap-4">
+          <Input
+            label="Email"
+            placeholder="you@example.com"
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <Input
+            variant="password"
+            label="Password"
+            placeholder="Choose a password"
+            value={password}
+            onChangeText={setPassword}
+          />
+          <Input
+            variant="password"
+            label="Confirm password"
+            placeholder="Repeat your password"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+        </View>
 
-          <View className="gap-3">
-            <Button
-              label="Create account"
-              variant="primary"
-              haptic
-              onPress={handleRegister}
-            />
-            <Button
-              label="Back"
-              variant="ghost"
-              onPress={() => router.back()}
-            />
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        <View className="gap-3">
+          <Button
+            label="Create account"
+            variant="primary"
+            haptic
+            onPress={handleRegister}
+          />
+          <Button label="Back" variant="ghost" onPress={() => router.back()} />
+        </View>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }

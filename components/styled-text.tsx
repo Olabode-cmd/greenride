@@ -66,7 +66,7 @@ export function StyledText({
   return (
     <Text
       className={className}
-      style={[style, { fontFamily, fontSize, lineHeight }]}
+      style={[{ fontSize, lineHeight }, style, { fontFamily }]}
       {...props}
     >
       {children}

@@ -20,6 +20,7 @@ module.exports = {
         bg: "#FFFFFF",
         surface: "#F5F5F5",
         "surface-raised": "#EBEBEB",
+        "surface-input": "#FAFAFA",
         border: "#E0E0E0",
         accent: "#1DB954",
         "accent-muted": "#1DB95420",

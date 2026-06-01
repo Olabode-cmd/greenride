@@ -7,7 +7,8 @@ import { getErrorMessage } from "@/utils/errors";
 import { sanitize } from "@/utils/sanitize";
 import { router } from "expo-router";
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
@@ -40,62 +41,57 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-bg">
-      <KeyboardAvoidingView
+      <KeyboardAwareScrollView
         className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingVertical: 48,
+          gap: 32,
+        }}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="px-4 py-12 gap-8"
-          keyboardShouldPersistTaps="handled"
-        >
-          <View className="gap-2">
-            <Logo size="md" />
-            <StyledText variant="body" className="text-secondary">
-              Welcome back. Sign in to continue.
+        <View className="gap-2">
+          <Logo size="sm" />
+          <StyledText variant="body" className="text-secondary">
+            Welcome back. Sign in to continue.
+          </StyledText>
+        </View>
+
+        <View className="gap-4">
+          <Input
+            label="Username"
+            placeholder="e.g. emilys"
+            autoCapitalize="none"
+            autoCorrect={false}
+            value={username}
+            onChangeText={setUsername}
+          />
+          <Input
+            variant="password"
+            label="Password"
+            placeholder="Your password"
+            value={password}
+            onChangeText={setPassword}
+          />
+
+          {error && (
+            <StyledText variant="caption" className="text-danger">
+              {error}
             </StyledText>
-          </View>
+          )}
+        </View>
 
-          <View className="gap-4">
-            <Input
-              label="Username"
-              placeholder="e.g. emilys"
-              autoCapitalize="none"
-              autoCorrect={false}
-              value={username}
-              onChangeText={setUsername}
-            />
-            <Input
-              variant="password"
-              label="Password"
-              placeholder="Your password"
-              value={password}
-              onChangeText={setPassword}
-            />
-
-            {error && (
-              <StyledText variant="caption" className="text-danger">
-                {error}
-              </StyledText>
-            )}
-          </View>
-
-          <View className="gap-3">
-            <Button
-              label="Log in"
-              variant="primary"
-              haptic
-              loading={loading}
-              onPress={handleLogin}
-            />
-            <Button
-              label="Back"
-              variant="ghost"
-              onPress={() => router.back()}
-            />
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        <View className="gap-3">
+          <Button
+            label="Log in"
+            variant="primary"
+            haptic
+            loading={loading}
+            onPress={handleLogin}
+          />
+          <Button label="Back" variant="ghost" onPress={() => router.back()} />
+        </View>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }

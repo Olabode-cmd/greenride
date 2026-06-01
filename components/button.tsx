@@ -43,6 +43,7 @@ export function Button({
   haptic = false,
   loading = false,
   fullWidth = true,
+  rounded = false,
   leftIcon,
   rightIcon,
   disabled,
@@ -81,14 +82,16 @@ export function Button({
 
   const isDisabled = disabled ?? loading;
 
+  const radiusClass = rounded ? "rounded-full" : "rounded-xl";
+
   const containerClassName =
     variant === "primary"
-      ? "bg-accent rounded-xl h-[52px] flex-row items-center justify-center gap-2"
+      ? `bg-accent ${radiusClass} h-[52px] flex-row items-center justify-center gap-2`
       : variant === "secondary"
-        ? "bg-transparent border border-border rounded-xl h-[52px] flex-row items-center justify-center gap-2"
+        ? `bg-transparent border border-border ${radiusClass} h-[52px] flex-row items-center justify-center gap-2`
         : variant === "ghost"
-          ? "bg-transparent rounded-xl h-[52px] flex-row items-center justify-center gap-2"
-          : "bg-danger rounded-xl h-[52px] flex-row items-center justify-center gap-2";
+          ? `bg-transparent ${radiusClass} h-[52px] flex-row items-center justify-center gap-2`
+          : `bg-danger ${radiusClass} h-[52px] flex-row items-center justify-center gap-2`;
 
   const labelClassName =
     variant === "primary"
