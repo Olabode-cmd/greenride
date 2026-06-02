@@ -1,3 +1,4 @@
+import { ErrorBoundary } from "@/components/error-boundary";
 import { PAYSTACK_CONFIG } from "@/services/paystack-config";
 import { tokenStore } from "@/services/token-store";
 import { useOngoingRideStore } from "@/stores/ongoing-ride-store";
@@ -52,14 +53,16 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <PaystackProvider publicKey={PAYSTACK_CONFIG.PUBLIC_KEY} currency="NGN">
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="auth" options={{ headerShown: false }} />
-          <Stack.Screen name="(protected)" options={{ headerShown: false }} />
-        </Stack>
-        <Toast />
-      </PaystackProvider>
+      <ErrorBoundary>
+        <PaystackProvider publicKey={PAYSTACK_CONFIG.PUBLIC_KEY} currency="NGN">
+          <Stack>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="auth" options={{ headerShown: false }} />
+            <Stack.Screen name="(protected)" options={{ headerShown: false }} />
+          </Stack>
+          <Toast />
+        </PaystackProvider>
+      </ErrorBoundary>
     </GestureHandlerRootView>
   );
 }
