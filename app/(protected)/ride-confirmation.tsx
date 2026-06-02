@@ -23,7 +23,7 @@ import {
 } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import { Alert, ScrollView, View } from "react-native";
-import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
@@ -202,14 +202,12 @@ export default function RideConfirmationScreen() {
         <View style={{ height: 220, backgroundColor: colors.surface }}>
           <MapView
             style={{ flex: 1 }}
-            provider={PROVIDER_DEFAULT}
             region={mapRegion}
             showsUserLocation={userLocation !== null}
             showsMyLocationButton={false}
             scrollEnabled={false}
             zoomEnabled={false}
             rotateEnabled={false}
-            customMapStyle={mapStyle}
           >
             <Marker
               coordinate={{
@@ -432,18 +430,3 @@ export default function RideConfirmationScreen() {
     </SafeAreaView>
   );
 }
-
-const mapStyle = [
-  { elementType: "geometry", stylers: [{ saturation: -60 }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#555555" }] },
-  {
-    featureType: "road",
-    elementType: "geometry",
-    stylers: [{ color: "#e8e8e8" }],
-  },
-  {
-    featureType: "water",
-    elementType: "geometry",
-    stylers: [{ color: "#c9d8e8" }],
-  },
-];

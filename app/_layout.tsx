@@ -15,15 +15,14 @@ import Toast from "react-native-toast-message";
 import "../global.css";
 
 /*
- * Silences all console output in production builds.
- * Keeps the release bundle clean without scattering __DEV__ guards
- * across every file. Development mode is unaffected.
+ * Silence non-error console output in production builds only.
+ * console.error is intentionally kept so crash reporters and
+ * React's error boundary machinery can still surface fatal errors.
  */
 if (!__DEV__) {
   const noop = () => {};
   console.log = noop;
   console.warn = noop;
-  console.error = noop;
   console.info = noop;
   console.debug = noop;
 }
