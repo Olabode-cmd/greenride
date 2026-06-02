@@ -1,7 +1,3 @@
-/*
- * Home screen placeholder.
- * Full implementation in Phase 3.
- */
 import { Text, View } from "react-native";
 
 export default function HomeScreen() {

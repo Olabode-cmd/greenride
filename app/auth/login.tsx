@@ -31,7 +31,7 @@ export default function LoginScreen() {
 
     try {
       await login(cleanUsername, cleanPassword);
-      router.replace("/(tabs)");
+      router.replace("/(protected)/(tabs)/index");
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {

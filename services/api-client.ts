@@ -7,6 +7,11 @@ export const apiClient = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+/*
+ * Attach the current access token to every outgoing request.
+ * Reads synchronously from the in-memory cache — safe because
+ * tokenStore.hydrate() is awaited before the navigator mounts.
+ */
 apiClient.interceptors.request.use((config) => {
   const token = tokenStore.getAccessToken();
   if (token) {
@@ -16,10 +21,15 @@ apiClient.interceptors.request.use((config) => {
 });
 
 /*
- * On a 401 response, exchange the stored refreshToken for a new
- * accessToken using the dummyjson /auth/refresh endpoint, then
- * replay the original request with the new token.
- * The _retry flag prevents infinite loops on repeated 401s.
+ * On a 401 response, attempt a silent token refresh then replay
+ * the original request with the new access token.
+ *
+ * refreshTokens is imported lazily to avoid a circular module
+ * dependency (auth-service → api-client → auth-service).
+ *
+ * The _retry flag ensures we only attempt one refresh per request
+ * cycle — if the replay also returns 401, we reject and let the
+ * auth guard handle the redirect.
  */
 apiClient.interceptors.response.use(
   (response) => response,
@@ -32,22 +42,20 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = tokenStore.getRefreshToken();
-        const { data } = await axios.post(
-          "https://dummyjson.com/auth/refresh",
-          { refreshToken, expiresInMins: 30 },
-          { headers: { "Content-Type": "application/json" } },
-        );
-
-        tokenStore.setTokens(data.accessToken, data.refreshToken);
+        const { refreshTokens } = await import("./auth-service");
+        await refreshTokens();
 
         if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+          originalRequest.headers.Authorization = `Bearer ${tokenStore.getAccessToken()}`;
         }
 
         return apiClient(originalRequest);
       } catch {
-        tokenStore.clear();
+        /*
+         * Refresh failed — tokens have been cleared by refreshTokens().
+         * Reject so the caller surfaces the error; the protected layout
+         * will detect the missing token on next render and redirect.
+         */
         return Promise.reject(error);
       }
     }

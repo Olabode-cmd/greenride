@@ -1,9 +1,3 @@
-/*
- * Bottom tab navigator.
- * Home and Profile tabs. Ride Confirmation is a stack screen, not a tab.
- * Icons from phosphor-react-native — weight switches between
- * "regular" (inactive) and "fill" (active) for a clean state toggle.
- */
 import { useTheme } from "@/theme/use-theme";
 import { Tabs } from "expo-router";
 import { HouseIcon, UserIcon } from "phosphor-react-native";

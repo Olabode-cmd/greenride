@@ -1,8 +1,9 @@
+import { tokenStore } from "@/services/token-store";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { colorScheme } from "nativewind";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 import Toast from "react-native-toast-message";
 import "../global.css";
@@ -21,27 +22,37 @@ export default function RootLayout() {
     DMSans_500Medium,
     DMSans_700Bold,
   });
+  const [hydrated, setHydrated] = useState(false);
 
   /*
-   * Hide splash screen once fonts are ready (or on error).
-   * onLayout fires after the first render, by which point
-   * useFonts has resolved — no useEffect needed.
+   * Hydrate the token store from secure storage before the navigator
+   * mounts. This warms the in-memory cache so the protected layout's
+   * synchronous optimistic check is reliable on cold start.
+   */
+  useEffect(() => {
+    tokenStore.hydrate().finally(() => setHydrated(true));
+  }, []);
+
+  /*
+   * Hide splash screen once both fonts and the token store are ready.
+   * onLayout fires after the first render — by that point useFonts
+   * has resolved and hydration has completed.
    */
   const onRootLayout = useCallback(() => {
-    if (loaded || error) {
+    if ((loaded || error) && hydrated) {
       if (error) console.warn("Font load error:", error);
       SplashScreen.hideAsync();
     }
-  }, [loaded, error]);
+  }, [loaded, error, hydrated]);
 
-  if (!loaded && !error) return null;
+  if ((!loaded && !error) || !hydrated) return null;
 
   return (
     <View style={{ flex: 1 }} onLayout={onRootLayout}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="auth" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(protected)" options={{ headerShown: false }} />
       </Stack>
       <Toast />
     </View>
