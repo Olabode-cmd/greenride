@@ -1,36 +1,32 @@
 import { Button } from "@/components/button";
 import { StyledText } from "@/components/styled-text";
 import { useOngoingRideStore } from "@/stores/ongoing-ride-store";
-import { useRideStore } from "@/stores/ride-store";
-import { useUserStore } from "@/stores/user-store";
 import { useTheme } from "@/theme/use-theme";
-import { Ride, VehicleCategory } from "@/types";
+import { VehicleCategory } from "@/types";
 import { calculateEcoPoints } from "@/utils/eco-utils";
-import * as Location from "expo-location";
 import { router } from "expo-router";
 import {
   BicycleIcon,
   CarIcon,
+  CheckCircleIcon,
   ClockIcon,
   CurrencyNgnIcon,
   LeafIcon,
   LightningIcon,
   MapPinIcon,
-  MotorcycleIcon as ScooterIcon,
+  MotorcycleIcon,
+  NavigationArrowIcon,
   StarIcon,
   UserIcon,
 } from "phosphor-react-native";
-import { useEffect, useState } from "react";
 import { Alert, ScrollView, View } from "react-native";
-import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
-import { usePaystack } from "react-native-paystack-webview";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 function VehicleIcon({
   category,
   color,
-  size = 20,
+  size = 22,
 }: {
   category: VehicleCategory;
   color: string;
@@ -38,7 +34,8 @@ function VehicleIcon({
 }) {
   const props = { size, color, weight: "regular" as const };
   if (category === VehicleCategory.Bike) return <BicycleIcon {...props} />;
-  if (category === VehicleCategory.Scooter) return <ScooterIcon {...props} />;
+  if (category === VehicleCategory.Scooter)
+    return <MotorcycleIcon {...props} />;
   return <CarIcon {...props} />;
 }
 
@@ -75,112 +72,104 @@ function DetailRow({ icon, label, value, valueColor }: DetailRowProps) {
   );
 }
 
-/*
- * Requests foreground location permission and returns the current
- * coordinates, or null if permission is denied.
- */
-async function requestUserLocation(): Promise<{
-  latitude: number;
-  longitude: number;
-} | null> {
-  const { status } = await Location.requestForegroundPermissionsAsync();
-  if (status !== "granted") return null;
-  const loc = await Location.getCurrentPositionAsync({
-    accuracy: Location.Accuracy.Balanced,
-  });
-  return { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
+function EmptyState() {
+  const { colors } = useTheme();
+  return (
+    <View
+      style={{
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 16,
+        paddingHorizontal: 32,
+      }}
+    >
+      <View
+        style={{
+          width: 72,
+          height: 72,
+          borderRadius: 20,
+          backgroundColor: colors.accentMuted,
+          alignItems: "center",
+          justifyContent: "center",
+          borderWidth: 1,
+          borderColor: colors.accent + "40",
+        }}
+      >
+        <NavigationArrowIcon size={32} color={colors.accent} weight="fill" />
+      </View>
+      <View style={{ gap: 8, alignItems: "center" }}>
+        <StyledText
+          variant="section"
+          className="text-primary"
+          style={{ textAlign: "center" }}
+        >
+          No active ride
+        </StyledText>
+        <StyledText
+          variant="body"
+          className="text-secondary"
+          style={{ textAlign: "center" }}
+        >
+          Book a ride on the home screen and it will appear here while it's in
+          progress.
+        </StyledText>
+      </View>
+      <Button
+        label="Find a ride"
+        variant="primary"
+        rounded
+        haptic
+        fullWidth={true}
+        onPress={() => router.navigate("/(protected)/(tabs)")}
+      />
+    </View>
+  );
 }
 
-export default function RideConfirmationScreen() {
-  const { selectedRide, clearSelection } = useRideStore();
-  const { recordBooking } = useUserStore();
-  const { setOngoing } = useOngoingRideStore();
+export default function OngoingScreen() {
+  const { ongoingRide, endRide } = useOngoingRideStore();
   const { colors } = useTheme();
-  const { popup } = usePaystack();
 
-  const [userLocation, setUserLocation] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
-  const [paying, setPaying] = useState(false);
-
-  useEffect(() => {
-    requestUserLocation().then(setUserLocation);
-  }, []);
-
-  if (!selectedRide) {
+  if (!ongoingRide) {
     return (
-      <SafeAreaView className="flex-1 bg-bg items-center justify-center">
-        <StyledText variant="body" className="text-secondary">
-          No ride selected.
-        </StyledText>
-        <Button
-          label="Go back"
-          variant="ghost"
-          fullWidth={false}
-          onPress={() => router.back()}
-        />
+      <SafeAreaView className="flex-1 bg-bg" edges={["top"]}>
+        <View
+          style={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8 }}
+        >
+          <StyledText variant="title" className="text-primary">
+            Ongoing ride
+          </StyledText>
+        </View>
+        <EmptyState />
       </SafeAreaView>
     );
   }
 
-  const ride: Ride = selectedRide;
-  const ecoPointsToEarn = calculateEcoPoints(ride.co2SavedKg);
+  const { ride, paymentReference, startedAt } = ongoingRide;
+  const ecoPoints = calculateEcoPoints(ride.co2SavedKg);
   const isSelfRide = ride.driver.totalTrips === 0;
-  const mapRegion = {
-    latitude: ride.destination.latitude,
-    longitude: ride.destination.longitude,
-    latitudeDelta: userLocation ? 0.05 : 0.01,
-    longitudeDelta: userLocation ? 0.05 : 0.01,
-  };
+  const startTime = new Date(startedAt).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-  function handleConfirm() {
-    setPaying(true);
-    const reference = `GR-${Date.now()}`;
-
-    popup.checkout({
-      /*
-       * The SDK expects naira — it multiplies by 100 internally to
-       * convert to kobo before calling the Paystack API.
-       */
-      amount: ride.priceNgn,
-      email: "test@greenride.app",
-      reference,
-      onSuccess: async () => {
-        try {
-          await setOngoing(ride, reference);
-          recordBooking(ride);
-          clearSelection();
+  function handleEndRide() {
+    Alert.alert("End ride", "Are you sure you want to end this ride?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "End ride",
+        style: "destructive",
+        onPress: async () => {
+          await endRide();
           Toast.show({
             type: "success",
-            text1: "Ride booked",
-            text2: `Ref: ${reference} · +${ecoPointsToEarn} EcoPoints`,
+            text1: "Ride completed",
+            text2: `+${ecoPoints} EcoPoints earned`,
           });
-          router.replace("/(protected)/(tabs)/ongoing");
-        } finally {
-          setPaying(false);
-        }
-      },
-      onCancel: () => {
-        setPaying(false);
-        Toast.show({ type: "error", text1: "Payment cancelled" });
-      },
-    });
-  }
-
-  function handleCancel() {
-    Alert.alert(
-      "Cancel booking",
-      "Are you sure you want to cancel this ride?",
-      [
-        { text: "Stay", style: "cancel" },
-        {
-          text: "Cancel booking",
-          style: "destructive",
-          onPress: () => router.back(),
         },
-      ],
-    );
+      },
+    ]);
   }
 
   return (
@@ -190,31 +179,36 @@ export default function RideConfirmationScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 24 }}
       >
-        <View style={{ height: 220, backgroundColor: colors.surface }}>
-          <MapView
-            style={{ flex: 1 }}
-            provider={PROVIDER_DEFAULT}
-            region={mapRegion}
-            showsUserLocation={userLocation !== null}
-            showsMyLocationButton={false}
-            scrollEnabled={false}
-            zoomEnabled={false}
-            rotateEnabled={false}
-            customMapStyle={mapStyle}
-          >
-            <Marker
-              coordinate={{
-                latitude: ride.destination.latitude,
-                longitude: ride.destination.longitude,
+        <View
+          style={{
+            paddingHorizontal: 16,
+            paddingTop: 24,
+            paddingBottom: 16,
+            gap: 4,
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <View
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 5,
+                backgroundColor: colors.accent,
               }}
-              title={ride.destination.label}
-              description={ride.destination.address}
-              pinColor={colors.accent}
             />
-          </MapView>
+            <StyledText
+              variant="caption"
+              style={{ color: colors.accent, fontFamily: "DMSans_500Medium" }}
+            >
+              In progress · started {startTime}
+            </StyledText>
+          </View>
+          <StyledText variant="title" className="text-primary">
+            Ongoing ride
+          </StyledText>
         </View>
 
-        <View style={{ padding: 16, gap: 20 }}>
+        <View style={{ paddingHorizontal: 16, gap: 16 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
             <View
               style={{
@@ -276,9 +270,15 @@ export default function RideConfirmationScreen() {
             />
             <View style={{ height: 1, backgroundColor: colors.border }} />
             <DetailRow
-              icon={<ClockIcon size={16} color={colors.secondary} />}
-              label="ETA"
-              value={`${ride.etaMinutes} min away`}
+              icon={
+                <NavigationArrowIcon
+                  size={16}
+                  color={colors.secondary}
+                  weight="fill"
+                />
+              }
+              label="Distance"
+              value={`${ride.destination.distanceKm} km`}
             />
             <View style={{ height: 1, backgroundColor: colors.border }} />
             <DetailRow
@@ -358,10 +358,10 @@ export default function RideConfirmationScreen() {
                 variant="caption"
                 style={{ color: colors.accent + "CC" }}
               >
-                EcoPoints to earn
+                EcoPoints earned
               </StyledText>
               <StyledText variant="label" style={{ color: colors.accent }}>
-                +{ecoPointsToEarn} pts
+                +{ecoPoints} pts
               </StyledText>
             </View>
           </View>
@@ -373,22 +373,49 @@ export default function RideConfirmationScreen() {
               padding: 16,
               borderWidth: 1,
               borderColor: colors.border,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
+              gap: 12,
             }}
           >
             <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
             >
-              <CurrencyNgnIcon size={20} color={colors.secondary} />
-              <StyledText variant="label" className="text-secondary">
-                Total fare
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+              >
+                <CurrencyNgnIcon size={20} color={colors.secondary} />
+                <StyledText variant="label" className="text-secondary">
+                  Paid
+                </StyledText>
+              </View>
+              <StyledText variant="title" style={{ color: colors.primary }}>
+                ₦{ride.priceNgn.toLocaleString()}
               </StyledText>
             </View>
-            <StyledText variant="title" style={{ color: colors.primary }}>
-              ₦{ride.priceNgn.toLocaleString()}
-            </StyledText>
+            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <StyledText variant="caption" className="text-secondary">
+                Reference
+              </StyledText>
+              <StyledText
+                variant="caption"
+                style={{
+                  fontFamily: "DMSans_500Medium",
+                  color: colors.primary,
+                }}
+              >
+                {paymentReference}
+              </StyledText>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -401,40 +428,19 @@ export default function RideConfirmationScreen() {
           borderTopWidth: 1,
           borderTopColor: colors.border,
           backgroundColor: colors.bg,
-          gap: 10,
         }}
       >
         <Button
-          label={paying ? "Opening payment…" : "Confirm & Pay"}
+          label="End ride"
           variant="primary"
           rounded
           haptic
-          loading={paying}
-          onPress={handleConfirm}
-        />
-        <Button
-          label="Cancel"
-          variant="ghost"
-          rounded
-          disabled={paying}
-          onPress={handleCancel}
+          leftIcon={
+            <CheckCircleIcon size={18} color={colors.bg} weight="fill" />
+          }
+          onPress={handleEndRide}
         />
       </View>
     </SafeAreaView>
   );
 }
-
-const mapStyle = [
-  { elementType: "geometry", stylers: [{ saturation: -60 }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#555555" }] },
-  {
-    featureType: "road",
-    elementType: "geometry",
-    stylers: [{ color: "#e8e8e8" }],
-  },
-  {
-    featureType: "water",
-    elementType: "geometry",
-    stylers: [{ color: "#c9d8e8" }],
-  },
-];

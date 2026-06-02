@@ -1,10 +1,13 @@
+import { PAYSTACK_CONFIG } from "@/services/paystack-config";
 import { tokenStore } from "@/services/token-store";
+import { useOngoingRideStore } from "@/stores/ongoing-ride-store";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { colorScheme } from "nativewind";
 import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { PaystackProvider } from "react-native-paystack-webview";
 import Toast from "react-native-toast-message";
 import "../global.css";
 
@@ -23,16 +26,17 @@ export default function RootLayout() {
     DMSans_700Bold,
   });
   const [hydrated, setHydrated] = useState(false);
+  const hydrateOngoing = useOngoingRideStore((s) => s.hydrate);
 
   useEffect(() => {
-    tokenStore.hydrate().finally(() => setHydrated(true));
-  }, []);
+    Promise.all([tokenStore.hydrate(), hydrateOngoing()]).finally(() =>
+      setHydrated(true),
+    );
+  }, [hydrateOngoing]);
 
   /*
-   * Hide the splash screen as soon as both fonts and the token store
-   * are ready. useEffect is legitimate here — it calls into an
-   * external native API (SplashScreen) in response to state changes.
-   * The onLayout approach is unreliable on Android.
+   * Hide the splash screen once fonts and all stores are hydrated.
+   * useEffect is legitimate here — it calls into an external native API.
    */
   useEffect(() => {
     if ((loaded || error) && hydrated) {
@@ -44,12 +48,14 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="auth" options={{ headerShown: false }} />
-        <Stack.Screen name="(protected)" options={{ headerShown: false }} />
-      </Stack>
-      <Toast />
+      <PaystackProvider publicKey={PAYSTACK_CONFIG.PUBLIC_KEY} currency="NGN">
+        <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="auth" options={{ headerShown: false }} />
+          <Stack.Screen name="(protected)" options={{ headerShown: false }} />
+        </Stack>
+        <Toast />
+      </PaystackProvider>
     </GestureHandlerRootView>
   );
 }

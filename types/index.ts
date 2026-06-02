@@ -73,6 +73,21 @@ export interface AuthTokens {
   refreshToken: string;
 }
 
+export interface OngoingRide {
+  ride: Ride;
+  paymentReference: string;
+  startedAt: string;
+  status: "ongoing" | "completed";
+}
+
+export interface OngoingRideStoreState {
+  ongoingRide: OngoingRide | null;
+  isHydrated: boolean;
+  hydrate: () => Promise<void>;
+  setOngoing: (ride: Ride, reference: string) => Promise<void>;
+  endRide: () => Promise<void>;
+}
+
 /*
  * Store shape interfaces live here so stores contain zero
  * locally-declared types — they only import and implement.

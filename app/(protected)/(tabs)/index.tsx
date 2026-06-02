@@ -6,6 +6,7 @@ import {
 } from "@/components/filter-sheet";
 import { RideCard } from "@/components/ride-card";
 import { StyledText } from "@/components/styled-text";
+import { useOngoingRideStore } from "@/stores/ongoing-ride-store";
 import { useRideStore } from "@/stores/ride-store";
 import { useUserStore } from "@/stores/user-store";
 import { useTheme } from "@/theme/use-theme";
@@ -16,7 +17,11 @@ import {
     BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
 import { router, useFocusEffect } from "expo-router";
-import { FunnelIcon, LeafIcon } from "phosphor-react-native";
+import {
+    FunnelIcon,
+    LeafIcon,
+    NavigationArrowIcon,
+} from "phosphor-react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
     ActivityIndicator,
@@ -25,15 +30,14 @@ import {
     TextInput,
     View,
 } from "react-native";
-import {
-    SafeAreaView
-} from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const { rides, isLoading, selectedRide, fetchRides, selectRide } =
     useRideStore();
   const { ecoPoints } = useUserStore();
   const { colors } = useTheme();
+  const ongoingRide = useOngoingRideStore((s) => s.ongoingRide);
 
   const [searchText, setSearchText] = useState("");
   const [filters, setFilters] = useState<RideFilters>(DEFAULT_FILTERS);
@@ -176,19 +180,31 @@ export default function HomeScreen() {
           </View>
 
           <View style={{ paddingHorizontal: 16, marginTop: 20, gap: 8 }}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <StyledText variant="label" className="text-secondary">
-                {filteredRides.length} ride
-                {filteredRides.length !== 1 ? "s" : ""} available
-              </StyledText>
-              {hasActiveFilters && (
-                <Pressable onPress={() => setFilters(DEFAULT_FILTERS)}>
+            {ongoingRide ? (
+              <Pressable
+                onPress={() => router.navigate("/(protected)/(tabs)/ongoing")}
+                accessibilityRole="button"
+                accessibilityLabel="View ongoing ride"
+                style={{
+                  backgroundColor: colors.accentMuted,
+                  borderRadius: 16,
+                  padding: 16,
+                  borderWidth: 1,
+                  borderColor: colors.accent + "50",
+                  gap: 12,
+                }}
+              >
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                >
+                  <View
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: colors.accent,
+                    }}
+                  />
                   <StyledText
                     variant="caption"
                     style={{
@@ -196,62 +212,120 @@ export default function HomeScreen() {
                       fontFamily: "DMSans_500Medium",
                     }}
                   >
-                    Clear filters
+                    Ride in progress
                   </StyledText>
-                </Pressable>
-              )}
-            </View>
+                </View>
 
-            {isLoading ? (
-              <View style={{ paddingVertical: 48, alignItems: "center" }}>
-                <ActivityIndicator color={colors.accent} />
-              </View>
-            ) : filteredRides.length === 0 ? (
-              <View
-                style={{ paddingVertical: 48, alignItems: "center", gap: 8 }}
-              >
-                <StyledText
-                  variant="body"
-                  className="text-secondary"
-                  style={{ textAlign: "center" }}
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
                 >
-                  No rides match your search.
-                </StyledText>
-              </View>
-            ) : (
-              <View style={{ gap: 12 }}>
-                {filteredRides.map((ride) => (
-                  <RideCard
-                    key={ride.id}
-                    ride={ride}
-                    selected={selectedRide?.id === ride.id}
-                    onPress={selectRide}
+                  <View style={{ gap: 2 }}>
+                    <StyledText variant="label" className="text-primary">
+                      {ongoingRide.ride.vehicle.make}{" "}
+                      {ongoingRide.ride.vehicle.model}
+                    </StyledText>
+                    <StyledText variant="caption" className="text-secondary">
+                      To {ongoingRide.ride.destination.label} ·{" "}
+                      {ongoingRide.ride.destination.distanceKm} km
+                    </StyledText>
+                  </View>
+                  <NavigationArrowIcon
+                    size={20}
+                    color={colors.accent}
+                    weight="fill"
                   />
-                ))}
-              </View>
+                </View>
+              </Pressable>
+            ) : (
+              <>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <StyledText variant="label" className="text-secondary">
+                    {filteredRides.length} ride
+                    {filteredRides.length !== 1 ? "s" : ""} available
+                  </StyledText>
+                  {hasActiveFilters && (
+                    <Pressable onPress={() => setFilters(DEFAULT_FILTERS)}>
+                      <StyledText
+                        variant="caption"
+                        style={{
+                          color: colors.accent,
+                          fontFamily: "DMSans_500Medium",
+                        }}
+                      >
+                        Clear filters
+                      </StyledText>
+                    </Pressable>
+                  )}
+                </View>
+
+                {isLoading ? (
+                  <View style={{ paddingVertical: 48, alignItems: "center" }}>
+                    <ActivityIndicator color={colors.accent} />
+                  </View>
+                ) : filteredRides.length === 0 ? (
+                  <View
+                    style={{
+                      paddingVertical: 48,
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <StyledText
+                      variant="body"
+                      className="text-secondary"
+                      style={{ textAlign: "center" }}
+                    >
+                      No rides match your search.
+                    </StyledText>
+                  </View>
+                ) : (
+                  <View style={{ gap: 12 }}>
+                    {filteredRides.map((ride) => (
+                      <RideCard
+                        key={ride.id}
+                        ride={ride}
+                        selected={selectedRide?.id === ride.id}
+                        onPress={selectRide}
+                      />
+                    ))}
+                  </View>
+                )}
+              </>
             )}
           </View>
         </ScrollView>
 
-        <View
-          style={{
-            paddingHorizontal: 16,
-            paddingTop: 12,
-            paddingBottom: 12,
-            borderWidth: 1,
-            borderColor: colors.border,
-            backgroundColor: colors.bg,
-          }}
-        >
-          <Button
-            label="Book Ride"
-            variant="primary"
-            rounded
-            haptic
-            disabled={!selectedRide}
-            onPress={() => router.push("/(protected)/ride-confirmation")}
-          />
-        </View>
+        {!ongoingRide && (
+          <View
+            style={{
+              paddingHorizontal: 16,
+              paddingTop: 12,
+              paddingBottom: 12,
+              borderWidth: 1,
+              borderColor: colors.border,
+              backgroundColor: colors.bg,
+            }}
+          >
+            <Button
+              label="Book Ride"
+              variant="primary"
+              rounded
+              haptic
+              disabled={!selectedRide}
+              onPress={() => router.push("/(protected)/ride-confirmation")}
+            />
+          </View>
+        )}
       </SafeAreaView>
 
       <FilterSheet

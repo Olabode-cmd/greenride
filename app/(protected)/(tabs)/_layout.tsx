@@ -1,9 +1,16 @@
+import { useOngoingRideStore } from "@/stores/ongoing-ride-store";
 import { useTheme } from "@/theme/use-theme";
 import { Tabs } from "expo-router";
-import { HouseIcon, UserIcon } from "phosphor-react-native";
+import {
+    HouseIcon,
+    NavigationArrowIcon,
+    UserIcon,
+} from "phosphor-react-native";
+import { View } from "react-native";
 
 export default function TabLayout() {
   const { colors } = useTheme();
+  const ongoingRide = useOngoingRideStore((s) => s.ongoingRide);
 
   return (
     <Tabs
@@ -32,6 +39,34 @@ export default function TabLayout() {
               color={color}
               weight={focused ? "fill" : "regular"}
             />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="ongoing"
+        options={{
+          title: "Ongoing",
+          tabBarIcon: ({ color, focused }) => (
+            <View>
+              <NavigationArrowIcon
+                size={26}
+                color={color}
+                weight={focused ? "fill" : "regular"}
+              />
+              {ongoingRide && (
+                <View
+                  style={{
+                    position: "absolute",
+                    top: -2,
+                    right: -4,
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: colors.accent,
+                  }}
+                />
+              )}
+            </View>
           ),
         }}
       />
