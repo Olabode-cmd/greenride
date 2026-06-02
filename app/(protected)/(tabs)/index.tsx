@@ -4,7 +4,9 @@ import {
     FilterSheet,
     RideFilters,
 } from "@/components/filter-sheet";
+import { OngoingRideBanner } from "@/components/ongoing-ride-banner";
 import { RideCard } from "@/components/ride-card";
+import { RideSearchBar } from "@/components/ride-search-bar";
 import { StyledText } from "@/components/styled-text";
 import { useOngoingRideStore } from "@/stores/ongoing-ride-store";
 import { useRideStore } from "@/stores/ride-store";
@@ -17,19 +19,9 @@ import {
     BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
 import { router, useFocusEffect } from "expo-router";
-import {
-    FunnelIcon,
-    LeafIcon,
-    NavigationArrowIcon,
-} from "phosphor-react-native";
+import { LeafIcon } from "phosphor-react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
-import {
-    ActivityIndicator,
-    Pressable,
-    ScrollView,
-    TextInput,
-    View,
-} from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
@@ -71,7 +63,6 @@ export default function HomeScreen() {
         edges={["top"]}
       >
         <ScrollView
-          className="flex-1"
           contentContainerStyle={{ paddingBottom: 48, paddingTop: 24 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -85,10 +76,10 @@ export default function HomeScreen() {
               }}
             >
               <View style={{ gap: 2 }}>
-                <StyledText variant="body" className="text-secondary">
+                <StyledText variant="body" style={{ color: colors.secondary }}>
                   Good day
                 </StyledText>
-                <StyledText variant="title" className="text-primary">
+                <StyledText variant="title" style={{ color: colors.primary }}>
                   Where to?
                 </StyledText>
               </View>
@@ -119,130 +110,17 @@ export default function HomeScreen() {
               </View>
             </View>
 
-            {/*
-             * Search bar with inline filter button.
-             * The filter dot badge indicates active filters are applied.
-             */}
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                backgroundColor: colors.surface,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: colors.border,
-                paddingLeft: 14,
-                paddingRight: 4,
-                height: 52,
-                gap: 8,
-              }}
-            >
-              <TextInput
-                placeholder="Search rides, vehicles, destinations..."
-                placeholderTextColor={colors.disabled}
-                value={searchText}
-                onChangeText={setSearchText}
-                style={{
-                  flex: 1,
-                  fontFamily: "DMSans_400Regular",
-                  fontSize: 14,
-                  color: colors.primary,
-                  height: "100%",
-                }}
-                returnKeyType="search"
-                autoCorrect={false}
-              />
-
-              <Pressable
-                onPress={() => filterSheetRef.current?.present()}
-                accessibilityLabel="Open ride filters"
-                accessibilityRole="button"
-                hitSlop={8}
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 10,
-                  backgroundColor: hasActiveFilters
-                    ? colors.accentMuted
-                    : colors.surface,
-                  borderWidth: 1,
-                  borderColor: hasActiveFilters
-                    ? colors.accent + "60"
-                    : colors.border,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <FunnelIcon
-                  size={18}
-                  color={hasActiveFilters ? colors.accent : colors.secondary}
-                  weight={hasActiveFilters ? "fill" : "regular"}
-                />
-              </Pressable>
-            </View>
+            <RideSearchBar
+              value={searchText}
+              onChangeText={setSearchText}
+              hasActiveFilters={hasActiveFilters}
+              onFilterPress={() => filterSheetRef.current?.present()}
+            />
           </View>
 
           <View style={{ paddingHorizontal: 16, marginTop: 20, gap: 8 }}>
             {ongoingRide ? (
-              <Pressable
-                onPress={() => router.navigate("/(protected)/(tabs)/ongoing")}
-                accessibilityRole="button"
-                accessibilityLabel="View ongoing ride"
-                style={{
-                  backgroundColor: colors.accentMuted,
-                  borderRadius: 16,
-                  padding: 16,
-                  borderWidth: 1,
-                  borderColor: colors.accent + "50",
-                  gap: 12,
-                }}
-              >
-                <View
-                  style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
-                >
-                  <View
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: 4,
-                      backgroundColor: colors.accent,
-                    }}
-                  />
-                  <StyledText
-                    variant="caption"
-                    style={{
-                      color: colors.accent,
-                      fontFamily: "DMSans_500Medium",
-                    }}
-                  >
-                    Ride in progress
-                  </StyledText>
-                </View>
-
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <View style={{ gap: 2 }}>
-                    <StyledText variant="label" className="text-primary">
-                      {ongoingRide.ride.vehicle.make}{" "}
-                      {ongoingRide.ride.vehicle.model}
-                    </StyledText>
-                    <StyledText variant="caption" className="text-secondary">
-                      To {ongoingRide.ride.destination.label} ·{" "}
-                      {ongoingRide.ride.destination.distanceKm} km
-                    </StyledText>
-                  </View>
-                  <NavigationArrowIcon
-                    size={20}
-                    color={colors.accent}
-                    weight="fill"
-                  />
-                </View>
-              </Pressable>
+              <OngoingRideBanner ongoingRide={ongoingRide} variant="banner" />
             ) : (
               <>
                 <View
@@ -252,12 +130,19 @@ export default function HomeScreen() {
                     justifyContent: "space-between",
                   }}
                 >
-                  <StyledText variant="label" className="text-secondary">
+                  <StyledText
+                    variant="label"
+                    style={{ color: colors.secondary }}
+                  >
                     {filteredRides.length} ride
                     {filteredRides.length !== 1 ? "s" : ""} available
                   </StyledText>
                   {hasActiveFilters && (
-                    <Pressable onPress={() => setFilters(DEFAULT_FILTERS)}>
+                    <Pressable
+                      onPress={() => setFilters(DEFAULT_FILTERS)}
+                      accessibilityRole="button"
+                      accessibilityLabel="Clear all filters"
+                    >
                       <StyledText
                         variant="caption"
                         style={{
@@ -276,17 +161,10 @@ export default function HomeScreen() {
                     <ActivityIndicator color={colors.accent} />
                   </View>
                 ) : filteredRides.length === 0 ? (
-                  <View
-                    style={{
-                      paddingVertical: 48,
-                      alignItems: "center",
-                      gap: 8,
-                    }}
-                  >
+                  <View style={{ paddingVertical: 48, alignItems: "center" }}>
                     <StyledText
                       variant="body"
-                      className="text-secondary"
-                      style={{ textAlign: "center" }}
+                      style={{ color: colors.secondary, textAlign: "center" }}
                     >
                       No rides match your search.
                     </StyledText>

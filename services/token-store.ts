@@ -62,4 +62,15 @@ export const tokenStore = {
       SecureStore.deleteItemAsync(REFRESH_KEY),
     ]);
   },
+
+  /*
+   * Clears only the in-memory cache without touching SecureStore.
+   * Used for soft logout — the user is redirected to login but all
+   * persisted data (stats, ongoing ride, theme) is preserved so it
+   * rehydrates correctly on next login.
+   */
+  clearCache: (): void => {
+    cachedAccessToken = null;
+    cachedRefreshToken = null;
+  },
 };

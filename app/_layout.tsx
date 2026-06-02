@@ -13,6 +13,20 @@ import { PaystackProvider } from "react-native-paystack-webview";
 import Toast from "react-native-toast-message";
 import "../global.css";
 
+/*
+ * Silences all console output in production builds.
+ * Keeps the release bundle clean without scattering __DEV__ guards
+ * across every file. Development mode is unaffected.
+ */
+if (!__DEV__) {
+  const noop = () => {};
+  console.log = noop;
+  console.warn = noop;
+  console.error = noop;
+  console.info = noop;
+  console.debug = noop;
+}
+
 const DMSans_400Regular = require("@expo-google-fonts/dm-sans/400Regular/DMSans_400Regular.ttf");
 const DMSans_500Medium = require("@expo-google-fonts/dm-sans/500Medium/DMSans_500Medium.ttf");
 const DMSans_700Bold = require("@expo-google-fonts/dm-sans/700Bold/DMSans_700Bold.ttf");

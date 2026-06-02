@@ -1,5 +1,6 @@
 import { Button } from "@/components/button";
 import { StyledText } from "@/components/styled-text";
+import { simulatePayment } from "@/services/payment-service";
 import { useOngoingRideStore } from "@/stores/ongoing-ride-store";
 import { useRideStore } from "@/stores/ride-store";
 import { useUserStore } from "@/stores/user-store";
@@ -23,7 +24,6 @@ import {
 import { useEffect, useState } from "react";
 import { Alert, ScrollView, View } from "react-native";
 import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
-import { usePaystack } from "react-native-paystack-webview";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
@@ -96,7 +96,6 @@ export default function RideConfirmationScreen() {
   const { recordBooking } = useUserStore();
   const { setOngoing } = useOngoingRideStore();
   const { colors } = useTheme();
-  const { popup } = usePaystack();
 
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
@@ -141,38 +140,36 @@ export default function RideConfirmationScreen() {
     longitudeDelta: userLocation ? 0.05 : 0.01,
   };
 
-  function handleConfirm() {
+  async function handleConfirm() {
     setPaying(true);
-    const reference = `GR-${Date.now()}`;
-
-    popup.checkout({
-      /*
-       * The SDK expects naira — it multiplies by 100 internally to
-       * convert to kobo before calling the Paystack API.
-       */
-      amount: ride.priceNgn,
-      email: "test@greenride.app",
-      reference,
-      onSuccess: async () => {
-        try {
-          await setOngoing(ride, reference);
-          recordBooking(ride);
-          clearSelection();
-          Toast.show({
-            type: "success",
-            text1: "Ride booked",
-            text2: `Ref: ${reference} · +${ecoPointsToEarn} EcoPoints`,
-          });
-          router.replace("/(protected)/(tabs)/ongoing");
-        } finally {
-          setPaying(false);
-        }
-      },
-      onCancel: () => {
-        setPaying(false);
-        Toast.show({ type: "error", text1: "Payment cancelled" });
-      },
-    });
+    try {
+      const result = await simulatePayment(ride.priceNgn);
+      if (result.status === "success") {
+        await setOngoing(ride, result.reference);
+        recordBooking(ride);
+        clearSelection();
+        Toast.show({
+          type: "success",
+          text1: "Ride booked",
+          text2: `Ref: ${result.reference} · +${ecoPointsToEarn} EcoPoints`,
+        });
+        router.replace("/(protected)/(tabs)/ongoing");
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Payment failed",
+          text2: "Please try again.",
+        });
+      }
+    } catch {
+      Toast.show({
+        type: "error",
+        text1: "Payment error",
+        text2: "Something went wrong.",
+      });
+    } finally {
+      setPaying(false);
+    }
   }
 
   function handleCancel() {
