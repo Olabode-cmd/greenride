@@ -9,7 +9,8 @@ import { StyledText } from "@/components/styled-text";
 import { useRideStore } from "@/stores/ride-store";
 import { useUserStore } from "@/stores/user-store";
 import { useTheme } from "@/theme/use-theme";
-import { Ride } from "@/types";
+import { applyFilters } from "@/utils/ride-filters";
+import { useDebounce } from "@/utils/use-debounce";
 import {
     BottomSheetModal,
     BottomSheetModalProvider,
@@ -25,94 +26,14 @@ import {
     View,
 } from "react-native";
 import {
-    SafeAreaView,
-    useSafeAreaInsets,
+    SafeAreaView
 } from "react-native-safe-area-context";
-
-function useDebounce(value: string, delay: number): string {
-  const [debounced, setDebounced] = useState(value);
-
-  /*
-   * useEffect is permitted here — it sets up a timer subscription
-   * that depends on an external value changing over time.
-   */
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const update = useCallback(
-    (v: string) => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => setDebounced(v), delay);
-    },
-    [delay],
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      update(value);
-      return () => {
-        if (timerRef.current) clearTimeout(timerRef.current);
-      };
-    }, [value, update]),
-  );
-
-  return debounced;
-}
-
-function applyFilters(
-  rides: Ride[],
-  query: string,
-  filters: RideFilters,
-): Ride[] {
-  let result = rides;
-
-  if (query.length > 0) {
-    const q = query.toLowerCase();
-    result = result.filter(
-      (r) =>
-        r.vehicle.make.toLowerCase().includes(q) ||
-        r.vehicle.model.toLowerCase().includes(q) ||
-        r.destination.label.toLowerCase().includes(q) ||
-        r.vehicle.category.toLowerCase().includes(q),
-    );
-  }
-
-  if (filters.categories.length > 0) {
-    result = result.filter((r) =>
-      filters.categories.includes(r.vehicle.category),
-    );
-  }
-
-  if (filters.propulsions.length > 0) {
-    result = result.filter((r) =>
-      filters.propulsions.includes(r.vehicle.propulsion),
-    );
-  }
-
-  if (filters.maxPrice !== null) {
-    result = result.filter((r) => r.priceNgn <= filters.maxPrice!);
-  }
-
-  if (filters.maxEta !== null) {
-    result = result.filter((r) => r.etaMinutes <= filters.maxEta!);
-  }
-
-  if (filters.minCo2Saved !== null) {
-    result = result.filter((r) => r.co2SavedKg >= filters.minCo2Saved!);
-  }
-
-  if (filters.selfRideOnly) {
-    result = result.filter((r) => r.driver.totalTrips === 0);
-  }
-
-  return result;
-}
 
 export default function HomeScreen() {
   const { rides, isLoading, selectedRide, fetchRides, selectRide } =
     useRideStore();
   const { ecoPoints } = useUserStore();
   const { colors } = useTheme();
-  const insets = useSafeAreaInsets();
 
   const [searchText, setSearchText] = useState("");
   const [filters, setFilters] = useState<RideFilters>(DEFAULT_FILTERS);

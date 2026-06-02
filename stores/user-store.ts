@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { calculateEcoPoints } from "../services/eco-utils";
+import { calculateEcoPoints } from "../utils/eco-utils";
 import { UserStoreState } from "../types";
 
 export const useUserStore = create<UserStoreState>((set) => ({
