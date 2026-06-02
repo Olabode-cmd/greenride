@@ -5,6 +5,7 @@ import { useOngoingRideStore } from "@/stores/ongoing-ride-store";
 import { useThemeStore } from "@/stores/theme-store";
 import { useUserStore } from "@/stores/user-store";
 import { useFonts } from "expo-font";
+import * as ExpoLocation from "expo-location";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
@@ -45,11 +46,17 @@ export default function RootLayout() {
   const hydrateTheme = useThemeStore((s) => s.hydrate);
 
   useEffect(() => {
+    /*
+     * Request all permissions at startup so they are granted before any
+     * screen that needs them mounts. Requesting on a specific screen was
+     * causing a native crash on Android due to timing issues.
+     */
     Promise.all([
       tokenStore.hydrate(),
       hydrateOngoing(),
       hydrateUser(),
       hydrateTheme(),
+      ExpoLocation.requestForegroundPermissionsAsync(),
     ]).finally(() => setHydrated(true));
   }, [hydrateOngoing, hydrateUser, hydrateTheme]);
 

@@ -76,19 +76,21 @@ function DetailRow({ icon, label, value, valueColor }: DetailRowProps) {
 }
 
 /*
- * Requests foreground location permission and returns the current
- * coordinates, or null if permission is denied.
+ * Gets the current position assuming permission was already granted
+ * at app startup. Returns null if location is unavailable.
  */
 async function requestUserLocation(): Promise<{
   latitude: number;
   longitude: number;
 } | null> {
-  const { status } = await Location.requestForegroundPermissionsAsync();
-  if (status !== "granted") return null;
-  const loc = await Location.getCurrentPositionAsync({
-    accuracy: Location.Accuracy.Balanced,
-  });
-  return { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
+  try {
+    const loc = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Balanced,
+    });
+    return { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
+  } catch {
+    return null;
+  }
 }
 
 export default function RideConfirmationScreen() {
