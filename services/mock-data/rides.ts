@@ -1,4 +1,10 @@
-import { PropulsionType, Ride, RideStatus, VehicleCategory, VehicleCondition } from "../../types";
+import {
+    PropulsionType,
+    Ride,
+    RideStatus,
+    VehicleCategory,
+    VehicleCondition,
+} from "../../types";
 
 export const mockRides: Ride[] = [
   {
@@ -30,7 +36,7 @@ export const mockRides: Ride[] = [
     },
     etaMinutes: 2,
     durationMinutes: 12,
-    priceUsd: 1.5,
+    priceNgn: 2500,
     co2SavedKg: 1.8,
     co2ComparisonLabel: "Equal to charging 150 phones",
     status: RideStatus.Available,
@@ -77,7 +83,7 @@ export const mockRides: Ride[] = [
     },
     etaMinutes: 4,
     durationMinutes: 18,
-    priceUsd: 3.25,
+    priceNgn: 5200,
     co2SavedKg: 2.4,
     co2ComparisonLabel: "Saves a 5km car trip worth of emissions",
     status: RideStatus.Available,
@@ -125,7 +131,7 @@ export const mockRides: Ride[] = [
     },
     etaMinutes: 6,
     durationMinutes: 22,
-    priceUsd: 7.0,
+    priceNgn: 11200,
     co2SavedKg: 3.1,
     co2ComparisonLabel: "Equivalent to planting 0.3 trees today",
     status: RideStatus.Available,
@@ -167,7 +173,7 @@ export const mockRides: Ride[] = [
     },
     etaMinutes: 3,
     durationMinutes: 14,
-    priceUsd: 2.75,
+    priceNgn: 4400,
     co2SavedKg: 1.95,
     co2ComparisonLabel: "Saves the same CO₂ as skipping one beef meal",
     status: RideStatus.Available,
@@ -215,7 +221,7 @@ export const mockRides: Ride[] = [
     },
     etaMinutes: 8,
     durationMinutes: 30,
-    priceUsd: 11.5,
+    priceNgn: 18400,
     co2SavedKg: 4.7,
     co2ComparisonLabel: "Offsets a 30-minute petrol car journey",
     status: RideStatus.Available,
@@ -261,7 +267,7 @@ export const mockRides: Ride[] = [
     },
     etaMinutes: 1,
     durationMinutes: 8,
-    priceUsd: 0.99,
+    priceNgn: 1500,
     co2SavedKg: 0.95,
     co2ComparisonLabel: "Zero emissions — pure pedal power",
     status: RideStatus.Available,

@@ -34,7 +34,7 @@ export interface Ride {
   driver: Driver;
   etaMinutes: number;
   durationMinutes: number;
-  priceUsd: number;
+  priceNgn: number;
   co2SavedKg: number;
   co2ComparisonLabel: string;
   status: RideStatus;

@@ -3,8 +3,8 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { colorScheme } from "nativewind";
-import { useCallback, useEffect, useState } from "react";
-import { View } from "react-native";
+import { useEffect, useState } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Toast from "react-native-toast-message";
 import "../global.css";
 
@@ -24,23 +24,18 @@ export default function RootLayout() {
   });
   const [hydrated, setHydrated] = useState(false);
 
-  /*
-   * Hydrate the token store from secure storage before the navigator
-   * mounts. This warms the in-memory cache so the protected layout's
-   * synchronous optimistic check is reliable on cold start.
-   */
   useEffect(() => {
     tokenStore.hydrate().finally(() => setHydrated(true));
   }, []);
 
   /*
-   * Hide splash screen once both fonts and the token store are ready.
-   * onLayout fires after the first render — by that point useFonts
-   * has resolved and hydration has completed.
+   * Hide the splash screen as soon as both fonts and the token store
+   * are ready. useEffect is legitimate here — it calls into an
+   * external native API (SplashScreen) in response to state changes.
+   * The onLayout approach is unreliable on Android.
    */
-  const onRootLayout = useCallback(() => {
+  useEffect(() => {
     if ((loaded || error) && hydrated) {
-      if (error) console.warn("Font load error:", error);
       SplashScreen.hideAsync();
     }
   }, [loaded, error, hydrated]);
@@ -48,13 +43,13 @@ export default function RootLayout() {
   if ((!loaded && !error) || !hydrated) return null;
 
   return (
-    <View style={{ flex: 1 }} onLayout={onRootLayout}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="auth" options={{ headerShown: false }} />
         <Stack.Screen name="(protected)" options={{ headerShown: false }} />
       </Stack>
       <Toast />
-    </View>
+    </GestureHandlerRootView>
   );
 }

@@ -2,11 +2,13 @@ import { Button } from "@/components/button";
 import { Logo } from "@/components/logo";
 import { StyledText } from "@/components/styled-text";
 import { tokenStore } from "@/services/token-store";
+import { useTheme } from "@/theme/use-theme";
 import { Redirect, router } from "expo-router";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 function BackgroundOrbs() {
+  const { colors } = useTheme();
   return (
     <>
       <View
@@ -15,7 +17,7 @@ function BackgroundOrbs() {
           width: 320,
           height: 320,
           borderRadius: 160,
-          backgroundColor: "#1DB95418",
+          backgroundColor: colors.accentMuted,
           top: -60,
           right: -80,
         }}
@@ -26,7 +28,7 @@ function BackgroundOrbs() {
           width: 240,
           height: 240,
           borderRadius: 120,
-          backgroundColor: "#1DB95410",
+          backgroundColor: colors.accent + "10",
           bottom: 80,
           left: -60,
         }}
