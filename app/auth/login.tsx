@@ -10,11 +10,11 @@ import { useState } from "react";
 import { View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 export default function LoginScreen() {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   async function handleLogin() {
@@ -22,18 +22,25 @@ export default function LoginScreen() {
     const cleanPassword = sanitize(password);
 
     if (!cleanUsername || !cleanPassword) {
-      setError("Please enter your username and password.");
+      Toast.show({
+        type: "error",
+        text1: "Missing fields",
+        text2: "Please enter your username and password.",
+      });
       return;
     }
 
-    setError(null);
     setLoading(true);
 
     try {
       await login(cleanUsername, cleanPassword);
-      router.replace("/(protected)/(tabs)/index");
+      router.replace("/(protected)/(tabs)" as never);
     } catch (err) {
-      setError(getErrorMessage(err));
+      Toast.show({
+        type: "error",
+        text1: "Login failed",
+        text2: getErrorMessage(err),
+      });
     } finally {
       setLoading(false);
     }
@@ -73,12 +80,6 @@ export default function LoginScreen() {
             value={password}
             onChangeText={setPassword}
           />
-
-          {error && (
-            <StyledText variant="caption" className="text-danger">
-              {error}
-            </StyledText>
-          )}
         </View>
 
         <View className="gap-3">
@@ -88,6 +89,7 @@ export default function LoginScreen() {
             haptic
             loading={loading}
             onPress={handleLogin}
+            rounded
           />
           <Button label="Back" variant="ghost" onPress={() => router.back()} />
         </View>

@@ -1,15 +1,11 @@
 import { Button } from "@/components/button";
 import { Logo } from "@/components/logo";
 import { StyledText } from "@/components/styled-text";
-import { router } from "expo-router";
+import { tokenStore } from "@/services/token-store";
+import { Redirect, router } from "expo-router";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-/*
- * Two large translucent orbs positioned absolutely to break up the
- * flat background. They use the accent colour at low opacity so they
- * work in both light and dark mode without hardcoded hex values.
- */
 function BackgroundOrbs() {
   return (
     <>
@@ -40,6 +36,10 @@ function BackgroundOrbs() {
 }
 
 export default function OnboardingScreen() {
+  if (tokenStore.getAccessToken() !== null) {
+    return <Redirect href="/(protected)/(tabs)" />;
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-bg">
       <BackgroundOrbs />

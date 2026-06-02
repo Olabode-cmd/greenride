@@ -82,6 +82,7 @@ export default function RegisterScreen() {
             variant="primary"
             haptic
             onPress={handleRegister}
+            rounded
           />
           <Button label="Back" variant="ghost" onPress={() => router.back()} />
         </View>
