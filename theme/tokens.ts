@@ -1,7 +1,7 @@
 /*
  * Design tokens mirroring tailwind.config.js values.
  * Used in places where NativeWind classes cannot reach
- * (e.g. react-native-maps styles, StatusBar colour).
+ * (e.g. WebView styles, StatusBar colour).
  * Base values are light-mode; dark overrides are nested under `dark`.
  */
 

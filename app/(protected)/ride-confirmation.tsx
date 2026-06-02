@@ -7,25 +7,76 @@ import { useUserStore } from "@/stores/user-store";
 import { useTheme } from "@/theme/use-theme";
 import { Ride, VehicleCategory } from "@/types";
 import { calculateEcoPoints } from "@/utils/eco-utils";
-import * as Location from "expo-location";
 import { router } from "expo-router";
 import {
-  BicycleIcon,
-  CarIcon,
-  ClockIcon,
-  CurrencyNgnIcon,
-  LeafIcon,
-  LightningIcon,
-  MapPinIcon,
-  MotorcycleIcon as ScooterIcon,
-  StarIcon,
-  UserIcon,
+    BicycleIcon,
+    CarIcon,
+    ClockIcon,
+    CurrencyNgnIcon,
+    LeafIcon,
+    LightningIcon,
+    MapPinIcon,
+    MotorcycleIcon as ScooterIcon,
+    StarIcon,
+    UserIcon,
 } from "phosphor-react-native";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Alert, ScrollView, View } from "react-native";
-import MapView, { Marker } from "react-native-maps";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import { WebView } from "react-native-webview";
+
+/*
+ * Builds a self-contained Leaflet HTML page centred on the given
+ * coordinates. All assets are loaded from CDN so no API key is needed.
+ * Interaction is disabled — the map is purely decorative.
+ */
+function buildLeafletHtml(lat: number, lng: number, accentColor: string) {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #map { width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    const map = L.map('map', {
+      center: [${lat}, ${lng}],
+      zoom: 15,
+      zoomControl: false,
+      dragging: false,
+      touchZoom: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      boxZoom: false,
+      keyboard: false,
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19,
+    }).addTo(map);
+
+    const icon = L.divIcon({
+      html: '<div style="width:14px;height:14px;border-radius:50%;background:${accentColor};border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>',
+      iconSize: [14, 14],
+      iconAnchor: [7, 7],
+      className: '',
+    });
+
+    L.marker([${lat}, ${lng}], { icon }).addTo(map);
+  </script>
+</body>
+</html>
+  `.trim();
+}
 
 function VehicleIcon({
   category,
@@ -75,39 +126,12 @@ function DetailRow({ icon, label, value, valueColor }: DetailRowProps) {
   );
 }
 
-/*
- * Gets the current position assuming permission was already granted
- * at app startup. Returns null if location is unavailable.
- */
-async function requestUserLocation(): Promise<{
-  latitude: number;
-  longitude: number;
-} | null> {
-  try {
-    const loc = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.Balanced,
-    });
-    return { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
-  } catch {
-    return null;
-  }
-}
-
 export default function RideConfirmationScreen() {
   const { selectedRide, clearSelection } = useRideStore();
   const { recordBooking } = useUserStore();
   const { setOngoing } = useOngoingRideStore();
   const { colors } = useTheme();
-
-  const [userLocation, setUserLocation] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
   const [paying, setPaying] = useState(false);
-
-  useEffect(() => {
-    requestUserLocation().then(setUserLocation);
-  }, []);
 
   if (!selectedRide) {
     return (
@@ -135,12 +159,6 @@ export default function RideConfirmationScreen() {
   const ride: Ride = selectedRide;
   const ecoPointsToEarn = calculateEcoPoints(ride.co2SavedKg);
   const isSelfRide = ride.driver.totalTrips === 0;
-  const mapRegion = {
-    latitude: ride.destination.latitude,
-    longitude: ride.destination.longitude,
-    latitudeDelta: userLocation ? 0.05 : 0.01,
-    longitudeDelta: userLocation ? 0.05 : 0.01,
-  };
 
   async function handleConfirm() {
     setPaying(true);
@@ -195,33 +213,28 @@ export default function RideConfirmationScreen() {
       edges={["top"]}
     >
       <ScrollView
-        className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 24 }}
       >
+        {/* Leaflet OSM map — no API key required */}
         <View style={{ height: 220, backgroundColor: colors.surface }}>
-          <MapView
+          <WebView
             style={{ flex: 1 }}
-            region={mapRegion}
-            showsUserLocation={userLocation !== null}
-            showsMyLocationButton={false}
+            source={{
+              html: buildLeafletHtml(
+                ride.destination.latitude,
+                ride.destination.longitude,
+                colors.accent,
+              ),
+            }}
             scrollEnabled={false}
-            zoomEnabled={false}
-            rotateEnabled={false}
-          >
-            <Marker
-              coordinate={{
-                latitude: ride.destination.latitude,
-                longitude: ride.destination.longitude,
-              }}
-              title={ride.destination.label}
-              description={ride.destination.address}
-              pinColor={colors.accent}
-            />
-          </MapView>
+            javaScriptEnabled
+            originWhitelist={["*"]}
+          />
         </View>
 
         <View style={{ padding: 16, gap: 20 }}>
+          {/* Vehicle header */}
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
             <View
               style={{
@@ -261,6 +274,7 @@ export default function RideConfirmationScreen() {
             )}
           </View>
 
+          {/* Trip details */}
           <View
             style={{
               backgroundColor: colors.surface,
@@ -317,6 +331,7 @@ export default function RideConfirmationScreen() {
             />
           </View>
 
+          {/* Eco impact */}
           <View
             style={{
               backgroundColor: colors.accentMuted,
@@ -373,6 +388,7 @@ export default function RideConfirmationScreen() {
             </View>
           </View>
 
+          {/* Fare */}
           <View
             style={{
               backgroundColor: colors.surface,
