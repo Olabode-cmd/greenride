@@ -66,7 +66,10 @@ export default function HomeScreen() {
 
   return (
     <BottomSheetModalProvider>
-      <SafeAreaView className="flex-1 bg-bg" edges={["top"]}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: colors.bg }}
+        edges={["top"]}
+      >
         <ScrollView
           className="flex-1"
           contentContainerStyle={{ paddingBottom: 48, paddingTop: 24 }}

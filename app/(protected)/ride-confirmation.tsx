@@ -110,7 +110,14 @@ export default function RideConfirmationScreen() {
 
   if (!selectedRide) {
     return (
-      <SafeAreaView className="flex-1 bg-bg items-center justify-center">
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: colors.bg,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <StyledText variant="body" className="text-secondary">
           No ride selected.
         </StyledText>
@@ -184,7 +191,10 @@ export default function RideConfirmationScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-bg" edges={["top"]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.bg }}
+      edges={["top"]}
+    >
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}

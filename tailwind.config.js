@@ -8,11 +8,6 @@ module.exports = {
     "./theme/**/*.{js,jsx,ts,tsx}",
   ],
   presets: [require("nativewind/preset")],
-  /*
-   * NativeWind v4 uses "class" dark mode — the colorScheme observable
-   * toggles a class on the root, which activates dark: variants.
-   * Base colour values are light-mode; dark: overrides apply in dark mode.
-   */
   darkMode: "class",
   theme: {
     extend: {

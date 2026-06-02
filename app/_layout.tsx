@@ -1,10 +1,11 @@
 import { PAYSTACK_CONFIG } from "@/services/paystack-config";
 import { tokenStore } from "@/services/token-store";
 import { useOngoingRideStore } from "@/stores/ongoing-ride-store";
+import { useThemeStore } from "@/stores/theme-store";
+import { useUserStore } from "@/stores/user-store";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { colorScheme } from "nativewind";
 import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaystackProvider } from "react-native-paystack-webview";
@@ -17,8 +18,6 @@ const DMSans_700Bold = require("@expo-google-fonts/dm-sans/700Bold/DMSans_700Bol
 
 SplashScreen.preventAutoHideAsync();
 
-colorScheme.set("light");
-
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     DMSans_400Regular,
@@ -27,12 +26,17 @@ export default function RootLayout() {
   });
   const [hydrated, setHydrated] = useState(false);
   const hydrateOngoing = useOngoingRideStore((s) => s.hydrate);
+  const hydrateUser = useUserStore((s) => s.hydrate);
+  const hydrateTheme = useThemeStore((s) => s.hydrate);
 
   useEffect(() => {
-    Promise.all([tokenStore.hydrate(), hydrateOngoing()]).finally(() =>
-      setHydrated(true),
-    );
-  }, [hydrateOngoing]);
+    Promise.all([
+      tokenStore.hydrate(),
+      hydrateOngoing(),
+      hydrateUser(),
+      hydrateTheme(),
+    ]).finally(() => setHydrated(true));
+  }, [hydrateOngoing, hydrateUser, hydrateTheme]);
 
   /*
    * Hide the splash screen once fonts and all stores are hydrated.

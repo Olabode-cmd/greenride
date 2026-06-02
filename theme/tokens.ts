@@ -25,6 +25,7 @@ export const colors = {
     primary: "#FFFFFF",
     secondary: "#A3A3A3",
     disabled: "#535353",
+    accentMuted: "#1DB95430",
   },
 } as const;
 

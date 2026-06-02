@@ -133,7 +133,10 @@ export default function OngoingScreen() {
 
   if (!ongoingRide) {
     return (
-      <SafeAreaView className="flex-1 bg-bg" edges={["top"]}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: colors.bg }}
+        edges={["top"]}
+      >
         <View
           style={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8 }}
         >
@@ -173,7 +176,10 @@ export default function OngoingScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-bg" edges={["top"]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.bg }}
+      edges={["top"]}
+    >
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}

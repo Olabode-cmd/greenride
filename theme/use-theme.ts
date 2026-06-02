@@ -24,7 +24,7 @@ export function useTheme(): { colors: ThemeColors; isDark: boolean } {
     surfaceRaised: isDark ? colors.dark.surfaceRaised : colors.surfaceRaised,
     border: isDark ? colors.dark.border : colors.border,
     accent: colors.accent,
-    accentMuted: colors.accentMuted,
+    accentMuted: isDark ? colors.dark.accentMuted : colors.accentMuted,
     primary: isDark ? colors.dark.primary : colors.primary,
     secondary: isDark ? colors.dark.secondary : colors.secondary,
     disabled: isDark ? colors.dark.disabled : colors.disabled,
